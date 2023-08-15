@@ -2,14 +2,12 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
+interface RestPublishSettings {
 	token: string;
 	publishUrl: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default',
+const DEFAULT_SETTINGS: RestPublishSettings = {
 	token: '',
 	publishUrl: ''
 }
@@ -18,6 +16,7 @@ export default class RestPublishPlugin extends Plugin {
 	settings: MyPluginSettings;
 
 	async onload() {
+		const { vault } = this.app;
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
@@ -35,6 +34,29 @@ export default class RestPublishPlugin extends Plugin {
 		this.addRibbonIcon('dice', 'Greet', () => {
   			new Notice('Hello, world!');
 		});
+
+		this.registerEvent(
+      		this.app.workspace.on("file-menu", (menu, file) => {
+        		menu.addItem((item) => {
+          			item
+            			.setTitle("Print file path 👈")
+            			.setIcon("document")
+            			.onClick(async () => {
+              				// new Notice(file.path);
+              				// const fileContents = await vault.cachedRead(file);
+              				// new Notice(fileContents.frontmatter);
+              				const frontmatter = this.app.metadataCache.getFileCache(file).frontmatter;
+              				let fileStatus = "";
+              				if (frontmatter.id) {
+              					fileStatus = "ID: " + frontmatter.id;
+              				} else {
+              					fileStatus = "No ID";
+              				}
+              				new Notice(fileStatus);
+     					});
+        		});
+      		})
+    	);
 
 		// This adds a simple command that can be triggered anywhere
 		// this.addCommand({
@@ -115,7 +137,7 @@ class SampleModal extends Modal {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
+class RestPublishSettingsTab extends PluginSettingTab {
 	plugin: MyPlugin;
 
 	constructor(app: App, plugin: MyPlugin) {
@@ -127,17 +149,6 @@ class SampleSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
 
 		new Setting(containerEl)
 			.setName('Token')
