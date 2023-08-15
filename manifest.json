@@ -1,0 +1,11 @@
+{
+	"id": "rest-sync-publish",
+	"name": "Rest Sync Publish",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "This plugin allows you to publish your notes to a remote server.",
+	"author": "Josh Bright",
+	"authorUrl": "https://joshbright.com",
+	"fundingUrl": "https://joshbright.com/plugin-pricing",
+	"isDesktopOnly": false
+}
