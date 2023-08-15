@@ -19,18 +19,18 @@ export default class RestPublishPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		// const statusBarItemEl = this.addStatusBarItem();
+		// statusBarItemEl.setText('Status Bar Text');
 
-		this.addRibbonIcon('dice', 'Greet', () => {
-  			new Notice('Hello, world!');
-		});
+		// this.addRibbonIcon('dice', 'Greet', () => {
+  		// 	new Notice('Hello, world!');
+		// });
 
 		this.registerEvent(
       		this.app.workspace.on("file-menu", (menu, file) => {
         		menu.addItem((item) => {
           			item
-            			.setTitle("Publish File 👈")
+            			.setTitle("Publish File")
             			.setIcon("document")
             			.onClick(async () => {
               				new PublishModal(this.app, (result: Object) => {
