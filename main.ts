@@ -42,17 +42,12 @@ export default class RestPublishPlugin extends Plugin {
             			.setTitle("Print file path 👈")
             			.setIcon("document")
             			.onClick(async () => {
-              				// new Notice(file.path);
-              				// const fileContents = await vault.cachedRead(file);
-              				// new Notice(fileContents.frontmatter);
-              				const frontmatter = this.app.metadataCache.getFileCache(file).frontmatter;
-              				let fileStatus = "";
-              				if (frontmatter.id) {
-              					fileStatus = "ID: " + frontmatter.id;
+              				let fileStatus = await this.getFileId(file);
+              				if (fileStatus) {
+              					new Notice(fileStatus);
               				} else {
-              					fileStatus = "No ID";
+              					new Notice("No ID Found");
               				}
-              				new Notice(fileStatus);
      					});
         		});
       		})
@@ -118,6 +113,15 @@ export default class RestPublishPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async getFileId(file: File): number | null {
+		const frontmatter = this.app.metadataCache.getFileCache(file).frontmatter;
+		try {
+			return frontmatter.id;
+		} catch (error) {
+			return null;
+		}
 	}
 }
 
