@@ -32,15 +32,18 @@ export default class RestPublishPlugin extends Plugin {
       		this.app.workspace.on("file-menu", (menu, file) => {
         		menu.addItem((item) => {
           			item
-            			.setTitle("Print file path 👈")
+            			.setTitle("Publish File 👈")
             			.setIcon("document")
             			.onClick(async () => {
-              				let fileStatus = await this.getFileId(file);
-              				if (fileStatus) {
-              					this.uploadFile(file, fileStatus)
-              				} else {
-              					this.uploadFile(file)
-              				}
+              				new PublishModal(this.app, (result: Object) => {
+              					// let fileStatus = await this.getFileId(file);
+	              				// if (fileStatus) {
+	              				// 	this.uploadFile(file, result, fileStatus)
+	              				// } else {
+	              				// 	this.uploadFile(file, result)
+	              				// }
+	              				console.log(result);
+              				}).open();
      					});
         		});
       		})
@@ -117,7 +120,7 @@ export default class RestPublishPlugin extends Plugin {
 		}
 	}
 
-	async uploadFile(file: File, id: number | null) {
+	async uploadFile(file: File, info: Object, id: number | null) {
 		const title = file.name.split('.')[0];
 		const fileObj = await this.app.vault.read(file);
 		const fileBlob = new Blob([fileObj], {type: file.type});
@@ -150,14 +153,52 @@ export default class RestPublishPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
+class PublishModal extends Modal {
+	status: string;
+	title: string;
+
+	onSubmit: (result: Object) => void;
+
+	constructor(app: App, onSubmit: (result: Object) => void) {
 		super(app);
+		this.onSubmit = onSubmit;
+		this.status = "draft";
 	}
 
 	onOpen() {
 		const {contentEl} = this;
-		contentEl.setText('Woah!');
+		contentEl.createEl("h1", { text: "Publish Settings:" });
+
+        new Setting(contentEl)
+      		.setName("Title")
+      		.addText((text) =>
+        		text.onChange((value) => {
+          		this.title = value
+        	}));
+
+        new Setting(contentEl)
+  			.setName('Status')
+  			.setDesc('Here you can set the status')
+  			.addDropdown(dropDown => {
+  				dropDown.addOption('draft', 'Draft');
+  				dropDown.addOption('published', 'Published');
+  				dropDown.onChange(async (value) =>	{
+  					this.status = value;
+  				});
+  			});	
+
+    	new Setting(contentEl)
+      		.addButton((btn) =>
+        		btn
+          			.setButtonText("Submit")
+          			.setCta()
+          			.onClick(() => {
+            			this.close();
+            			this.onSubmit({
+            				status: this.status,
+			  				title: this.title
+            			});
+          			}));
 	}
 
 	onClose() {
