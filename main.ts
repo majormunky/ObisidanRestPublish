@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
+
 // Remember to rename these classes and interfaces!
 
 interface RestPublishSettings {
@@ -13,19 +14,11 @@ const DEFAULT_SETTINGS: RestPublishSettings = {
 }
 
 export default class RestPublishPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: RestPublishSettings;
 
 	async onload() {
 		const { vault } = this.app;
 		await this.loadSettings();
-
-		// This creates an icon in the left ribbon.
-		// const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-		// 	// Called when the user clicks the icon.
-		// 	new Notice('This is a notice!');
-		// });
-		// // Perform additional things with the ribbon
-		// ribbonIconEl.addClass('my-plugin-ribbon-class');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
@@ -44,9 +37,9 @@ export default class RestPublishPlugin extends Plugin {
             			.onClick(async () => {
               				let fileStatus = await this.getFileId(file);
               				if (fileStatus) {
-              					new Notice(fileStatus);
+              					this.uploadFile(file, fileStatus)
               				} else {
-              					new Notice("No ID Found");
+              					this.uploadFile(file)
               				}
      					});
         		});
@@ -91,7 +84,7 @@ export default class RestPublishPlugin extends Plugin {
 		// });
 
 		// // This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new RestPublishSettingsTab(this.app, this));
 
 		// // If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// // Using this function will automatically remove the event listener when this plugin is disabled.
@@ -123,6 +116,38 @@ export default class RestPublishPlugin extends Plugin {
 			return null;
 		}
 	}
+
+	async uploadFile(file: File, id: number | null) {
+		const title = file.name.split('.')[0];
+		const fileObj = await this.app.vault.read(file);
+		const fileBlob = new Blob([fileObj], {type: file.type});
+		const data = new FormData();
+		data.append('markdown_file', fileBlob, file.name);
+		data.append('title', title);
+		data.append("slug", title);
+		data.append("publish_date", "2023-07-01")
+
+		let url = this.settings.publishUrl;
+
+		if (id) {
+			url += `/${id}/`	
+		}
+
+		const headers = new Headers();
+		headers.append("Authorization", `Token ${this.settings.token}`);
+
+		const res = await fetch(url, {
+			method: 'POST',
+			headers: headers,
+			body: data
+		});
+
+		if (res.ok) {
+			new Notice("File Uploaded");
+		} else {
+			new Notice("File Upload Failed: " + res.status + " " + res.statusText);
+		}
+	}
 }
 
 class SampleModal extends Modal {
@@ -142,9 +167,9 @@ class SampleModal extends Modal {
 }
 
 class RestPublishSettingsTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: RestPublishPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: RestPublishPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
