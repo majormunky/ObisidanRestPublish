@@ -34,7 +34,9 @@ export default class RestPublishPlugin extends Plugin {
             			.setIcon("document")
             			.onClick(async () => {
               				new PublishModal(this.app, (result: Object) => {
-              					// let fileStatus = await this.getFileId(file);
+              					let fileStatus = await this.getFileId(file);
+              					result.id = fileStatus;
+              					this.uploadFile(file, result);
 	              				// if (fileStatus) {
 	              				// 	this.uploadFile(file, result, fileStatus)
 	              				// } else {
@@ -72,20 +74,20 @@ export default class RestPublishPlugin extends Plugin {
 		}
 	}
 
-	async uploadFile(file: File, info: Object, id: number | null) {
-		const title = file.name.split('.')[0];
+	async uploadFile(file: File, info: Object) {
+		// const title = file.name.split('.')[0];
 		const fileObj = await this.app.vault.read(file);
 		const fileBlob = new Blob([fileObj], {type: file.type});
 		const data = new FormData();
 		data.append('markdown_file', fileBlob, file.name);
-		data.append('title', title);
-		data.append("slug", title);
+		data.append('title', info.title);
+		data.append("slug", info.title);
 		data.append("publish_date", "2023-07-01")
 
 		let url = this.settings.publishUrl;
 
-		if (id) {
-			url += `/${id}/`	
+		if (info.id) {
+			url += `/${info.id}/`	
 		}
 
 		const headers = new Headers();
