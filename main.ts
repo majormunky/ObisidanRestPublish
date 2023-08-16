@@ -108,6 +108,7 @@ export default class RestPublishPlugin extends Plugin {
 class PublishModal extends Modal {
 	status: string;
 	title: string;
+	publishDate: string;
 
 	onSubmit: (result: Object) => void;
 
@@ -126,6 +127,13 @@ class PublishModal extends Modal {
       		.addText((text) =>
         		text.onChange((value) => {
           		this.title = value
+        	}));
+
+        new Setting(contentEl)
+      		.setName("Publish Date")
+      		.addText((text) =>
+        		text.onChange((value) => {
+          		this.publishDate = value
         	}));
 
         new Setting(contentEl)
@@ -148,7 +156,8 @@ class PublishModal extends Modal {
             			this.close();
             			this.onSubmit({
             				status: this.status,
-			  				title: this.title
+			  				title: this.title,
+			  				publishDate: this.publishDate
             			});
           			}));
 	}
