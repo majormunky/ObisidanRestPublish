@@ -100,10 +100,26 @@ export default class RestPublishPlugin extends Plugin {
 		});
 
 		if (res.ok) {
-			new Notice("File Uploaded");
+			new ResultModal(this.app, res).open();
 		} else {
-			new Notice("File Upload Failed: " + res.status + " " + res.statusText);
+			new Notice("File Upload Failed: " + res.status + " " + res.statusText + " " + res.body);
 		}
+	}
+}
+
+class ResultModal extends Modal {
+	content: Object;
+
+	constructor(app: App, content: Object) {
+		super(app);
+		this.content = content;
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+		contentEl.empty();
+
+		contentEl.createEl("p", { text: JSON.stringify(this.content) });
 	}
 }
 
