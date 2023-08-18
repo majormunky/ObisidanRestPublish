@@ -82,7 +82,7 @@ export default class RestPublishPlugin extends Plugin {
 		data.append('markdown_file', fileBlob, file.name);
 		data.append('title', info.title);
 		data.append("slug", info.title);
-		data.append("publish_date", "2023-07-01")
+		data.append("publish_date", info.publishDate);
 
 		let url = this.settings.publishUrl;
 
