@@ -93,8 +93,10 @@ export default class RestPublishPlugin extends Plugin {
 			body: data
 		});
 
+		const jsonData = await res.json();
+
 		if (res.ok) {
-			new ResultModal(this.app, res).open();
+			new ResultModal(this.app, jsonData).open();
 		} else {
 			new Notice("File Upload Failed: " + res.status + " " + res.statusText + " " + res.body);
 		}
