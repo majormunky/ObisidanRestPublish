@@ -33,9 +33,13 @@ export default class RestPublishPlugin extends Plugin {
             			.setTitle("Publish File")
             			.setIcon("document")
             			.onClick(async () => {
+            				this.app.selectedFileInfo = await this.getFrontmatter(file);
               				new PublishModal(this.app, async (result: Object) => {
-              					let fileStatus = await this.getFileId(file);
-              					result.id = fileStatus;
+              					let fileId = null;
+								if ((this.app.selectedFileInfo) && (this.app.selectedFileInfo.id)) {
+				  					fileId = this.app.selectedFileInfo.id;
+			  					}
+              					result.id = fileId;
               					await this.uploadFile(file, result);
               				}).open();
      					});
