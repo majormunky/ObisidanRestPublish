@@ -68,6 +68,15 @@ export default class RestPublishPlugin extends Plugin {
 		}
 	}
 
+	async getFrontmatter(file: File): Object | null {
+		const frontmatter = this.app.metadataCache.getFileCache(file).frontmatter;
+		try {
+			return frontmatter.webInfo;
+		} catch (error) {
+			return null;
+		}
+	}
+
 	async uploadFile(file: File, info: Object) {
 		// const title = file.name.split('.')[0];
 		const fileObj = await this.app.vault.read(file);
