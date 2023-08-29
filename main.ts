@@ -82,26 +82,27 @@ export default class RestPublishPlugin extends Plugin {
 	}
 
 	async uploadFile(file: File, info: Object) {
-		// const title = file.name.split('.')[0];
 		const fileObj = await this.app.vault.read(file);
 		const fileBlob = new Blob([fileObj], {type: file.type});
 		const data = new FormData();
 		data.append('markdown_file', fileBlob, file.name);
 		data.append('title', info.title);
-		data.append("slug", info.title);
+		data.append("slug", "test");
 		data.append("publish_date", info.publishDate);
 
 		let url = this.settings.publishUrl;
+		let method = "POST";
 
 		if (info.id) {
-			url += `/${info.id}/`	
+			url += `${info.id}/`;
+			method = "PATCH";
 		}
 
 		const headers = new Headers();
 		headers.append("Authorization", `Token ${this.settings.token}`);
 
 		const res = await fetch(url, {
-			method: 'POST',
+			method: method,
 			headers: headers,
 			body: data
 		});
@@ -109,12 +110,18 @@ export default class RestPublishPlugin extends Plugin {
 		const jsonData = await res.json();
 
 		if (res.ok) {
-			new ResultModal(this.app, jsonData).open();
+			// Update frontmatter with data about post
+			app.fileManager.processFrontMatter(file, (data) => {
+				data.webInfo = jsonData;
+			});
+
+			new Notice("Document Published!");
 		} else {
 			new Notice("File Upload Failed: " + res.status + " " + res.statusText + " " + res.body);
 		}
 	}
 }
+
 
 class ResultModal extends Modal {
 	content: Object;
