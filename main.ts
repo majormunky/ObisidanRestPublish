@@ -148,8 +148,11 @@ class PublishModal extends Modal {
 
 	constructor(app: App, onSubmit: (result: Object) => void) {
 		super(app);
+		this.info = app.selectedFileInfo;
 		this.onSubmit = onSubmit;
-		this.status = "draft";
+		this.status = this.info?.status || "draft";
+		this.publishDate = this.info?.publish_date || "";
+		this.title = this.info?.title || "";
 	}
 
 	onOpen() {
@@ -158,25 +161,30 @@ class PublishModal extends Modal {
 
         new Setting(contentEl)
       		.setName("Title")
-      		.addText((text) =>
-        		text.onChange((value) => {
-          		this.title = value
-        	}));
+      		.addText((text) => text
+      			.setValue(this.title)
+      			.onChange((value) => {
+          			this.title = value
+        		}
+        	));
 
         new Setting(contentEl)
       		.setName("Publish Date")
-      		.addText((text) =>
-        		text.onChange((value) => {
-          		this.publishDate = value
-        	}));
+      		.addText((text) => text
+      			.setValue(this.publishDate)
+      			.onChange((value) => {
+          			this.publishDate = value
+        		}
+        	));
 
         new Setting(contentEl)
   			.setName('Status')
   			.setDesc('Here you can set the status')
-  			.addDropdown(dropDown => {
-  				dropDown.addOption('draft', 'Draft');
-  				dropDown.addOption('published', 'Published');
-  				dropDown.onChange(async (value) =>	{
+  			.addDropdown(dropDown => { dropDown
+  				.addOption('draft', 'Draft')
+  				.addOption('published', 'Published')
+  				.setValue(this.status)
+  				.onChange(async (value) =>	{
   					this.status = value;
   				});
   			});	
